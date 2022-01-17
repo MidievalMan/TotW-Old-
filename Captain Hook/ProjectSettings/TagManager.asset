@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Grappleable
+  - Pushable
+  - Enemy
+  - Hazards
+  - Room
+  - Hook1
+  - Sign
+  - NPC
+  - Door
+  - Platforms
+  - CheckPoint
+  - Coin
+  - Wall
+  - Wacko
+  - Ungrappleable
+  - PushHook
+  - Hat
+  - WackoDance
+  - UnWackoDance
+  - ShopText
+  - DropStuff
+  - Thought
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - 
+  - Water
+  - UI
+  - Player
+  - PInG
+  - Grappleables
+  - Enemy
+  - Platforms
+  - OtherCollisions
+  - Spring
+  - Backgrounds
+  - MinimapOnly
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: BackgroundArt
+    uniqueID: 1989266883
+    locked: 0
+  - name: BG
+    uniqueID: 3363109783
+    locked: 0
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: Platforms
+    uniqueID: 3343466495
+    locked: 0
+  - name: Hooks
+    uniqueID: 3506126849
+    locked: 0
+  - name: Player
+    uniqueID: 2853290181
+    locked: 0
+  - name: Hat
+    uniqueID: 4137915835
+    locked: 0
+  - name: Foreground
+    uniqueID: 1892832863
+    locked: 0
+  - name: Two-Way
+    uniqueID: 4206677483
+    locked: 0
+  - name: Particles
+    uniqueID: 3815874611
+    locked: 0
+  - name: Transition
+    uniqueID: 487955287
+    locked: 0

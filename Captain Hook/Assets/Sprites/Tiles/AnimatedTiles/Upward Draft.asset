@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Name: Upward Draft
+  m_EditorClassIdentifier: 
+  m_AnimatedSprites:
+  - {fileID: -991744661331620566, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 4158765095691498310, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 7008538046433245666, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: -2101513678831126021, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 3795990003584684536, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 1425305933045324145, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 3003638635426362797, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 1815939698119156853, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 639677762713170010, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: -8130726131896940033, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: -5320053341376465528, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 8010765937312488956, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: -6220241322998251239, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 5694697342487773530, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 3145965346692834645, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 9179246014255501946, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 7175649746776600197, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  - {fileID: 7800783147226438548, guid: 936d57bed1a42324b823cc9e914db022, type: 3}
+  m_MinSpeed: 8
+  m_MaxSpeed: 8
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 2
