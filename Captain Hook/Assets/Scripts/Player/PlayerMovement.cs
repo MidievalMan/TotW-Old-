@@ -7,33 +7,20 @@ public class PlayerMovement : MonoBehaviour
 {
 
     // References
-    BoxCollider2D col;
+    public BoxCollider2D col;
+    public BoxCollider2D colCrouch;
     private Rigidbody2D rb;
     public Camera mainCam;
+    public GrapplingHook hookScript;
+    public GameObject landingParticleEffect;
 
     [SerializeField] private LayerMask platformLayerMask;
 
-    // Public
-
-
     public float jumpForce;
-
     private float distanceGround;
-
-    public float gravity;
     public float speed;
 
-    private const float MAX_HORIZONTAL_SPEED = 10.5f;
-    private const float MAX_VERTICAL_SPEED = 30;
-
-    public GrapplingHook hookScript;
-
-    private float velCapY;
-    public GameObject landingParticleEffect;
-
     // Private
-
-
     private int numJumps;
     private bool masterControl = true;
     private const float WAIT_FOR_COIN = 0.5f;
@@ -41,33 +28,53 @@ public class PlayerMovement : MonoBehaviour
     Vector2 input;
     private bool firstPlatformTouch = true;
 
+    // Normal Movement Vars
+    private float normalSpeed;
+
     private bool isJumping;
-    public float yGoal;
-    private float yPrevious;
-    private float yDifference;
     public float maxJumpTime;
     private float jumpTimeCounter;
+    private bool canJump;
+    private bool bufferJump = false;
+    private float bufferJumpTime = 0.1f;
+    private bool coyoteTimeCoroutineHasNotTriggeredYet;
+    private float coyoteTime = 0.06f;
 
-    private const float NORMAL_H_DRAG = 0.75f;
-    private const float SPEEDY_H_DRAG = 0.95f;
-    public float horizontalDrag;
-    private float velocityStep;
-    private float velocityCapStrength = 0.5f;
+    public float dashForce;
+    public float dashLength;
+    private Vector2 dashVector;
+    private bool isDashing = false;
+    private bool canDash;
+    private float dashRechargeTimer;
+    private float dashRechargeTime = 0.4f;
+    private bool startDash = false;
+
+    private bool isCrouching;
+    private float crouchSpeed;
+
+    //summons
+    public float parachuteModifier = 1f;
+
+    //drag
+    public float drag = 1f;
+    public float acceleration = 10.0f;
 
     private MovementState state = MovementState.Normal;
 
-    private void Awake()
-    {
-        //SoundManager.Initialize();
-    }
+    //Dialogue
+    [SerializeField] private DialogueUI dialogueUI;
+
+    public DialogueUI DialogueUI => dialogueUI;
+
+    public IInteractable Interactable { get; set; }
 
     void Start()
     {
-        col = GetComponent<BoxCollider2D>();
         rb = GetComponent<Rigidbody2D>();
 
         distanceGround = col.bounds.extents.y; // for isGrounded
-        horizontalDrag = NORMAL_H_DRAG;
+        crouchSpeed = speed / 2f;
+        normalSpeed = speed;
     }
 
     void Update()
@@ -78,7 +85,6 @@ public class PlayerMovement : MonoBehaviour
                 ExecuteNormalUpdate();
                 break;
         }
-
     }
 
     void FixedUpdate()
@@ -92,104 +98,242 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    private IEnumerator SetBufferJump()
+    {
+        bufferJump = true;
+        yield return new WaitForSeconds(bufferJumpTime);
+        bufferJump = false;
+    }
+
     private void ExecuteNormalUpdate()
     {
+        if(Input.GetKeyDown(KeyCode.E) && !dialogueUI.isOpen)
+        {
+            if(Interactable != null)
+            {
+                Interactable.Interact(this);
+            }
+        }
+
+        if(dialogueUI.isOpen)
+        {
+            masterControl = false;
+        } else
+        {
+            masterControl = true;
+        }
 
         if (masterControl) {
-            // jumping
-            if (Input.GetKeyDown(KeyCode.Space) && hookScript.isNotGrappling && isGrounded()) {
 
-                yPrevious = transform.position.y;
-                yDifference = 0f;
-                isJumping = true;
-                jumpTimeCounter = maxJumpTime;
-
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-
-                EventManager.TriggerEvent("jump");
-
-                SoundManager.PlaySound(SoundManager.Sound.Jump);
+            // Jump
+            if (Input.GetKeyDown(KeyCode.Space) && !isDashing) {
+                StopCoroutine(SetBufferJump());
+                StartCoroutine(SetBufferJump());
             }
-
-            if (isJumping && Input.GetKey(KeyCode.Space)) {
-                if (jumpTimeCounter > 0 && yDifference < yGoal) {
-                    rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                    jumpTimeCounter -= Time.deltaTime;
-
-                    yDifference += transform.position.y - yPrevious;
-                    yPrevious = transform.position.y;
-                } else {
-                    isJumping = false;
-                }
-
+            if(bufferJump && canJump)
+            {
+                InitialJump();
+                bufferJump = false;
             }
-
             if (Input.GetKeyUp(KeyCode.Space)) {
                 isJumping = false;
             }
+            RaycastHit2D hit1 = Physics2D.Raycast(col.bounds.max, Vector2.up, 0.05f, platformLayerMask);
+            //Debug.DrawRay(col.bounds.max, Vector2.up * 0.05f);
+            RaycastHit2D hit2 = Physics2D.Raycast(new Vector2(col.bounds.min.x, col.bounds.max.y), Vector2.up, 0.05f, platformLayerMask);
+            //Debug.DrawRay(new Vector3(col.bounds.min.x, col.bounds.max.y, 0), Vector2.up * 0.05f);
+            if (hit1 || hit2) {
+                isJumping = false;
+            }
 
-            input = new Vector2(Input.GetAxis("Horizontal"), 0);
-        }
-    }
+            // Dash
+            if (Input.GetButton("Fire2") && canDash) {
+                startDash = true;
+            }
+            if(isGrounded() && dashRechargeTimer <= 0) {
+                canDash = true;
+            }
 
-    private void ExecuteNormalFixed() {
-        if (masterControl) {
-
-            rb.velocity = new Vector2(rb.velocity.x * horizontalDrag, rb.velocity.y);
-            // Horizontal Movement
-            if (rb.velocity.x > MAX_HORIZONTAL_SPEED + MAX_HORIZONTAL_SPEED / 3f) {
-                horizontalDrag = SPEEDY_H_DRAG;
-                velocityStep += Time.deltaTime * 0.1f;// (1f / velocityCapStrength);
-                rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, MAX_HORIZONTAL_SPEED, velocityStep), rb.velocity.y);
-            } else if (rb.velocity.x < -MAX_HORIZONTAL_SPEED - MAX_HORIZONTAL_SPEED / 3f) {
-                horizontalDrag = SPEEDY_H_DRAG;
-                velocityStep += Time.deltaTime * 0.1f;// (1f / velocityCapStrength);
-                rb.velocity = new Vector2(Mathf.Lerp(rb.velocity.x, MAX_HORIZONTAL_SPEED, velocityStep), rb.velocity.y);
+            // Crouch
+            if(Input.GetKeyDown(KeyCode.LeftShift)) {
+                isCrouching = true;
+            }
+            if(Input.GetKeyUp(KeyCode.LeftShift)) {
+                isCrouching = false;
+            }
+            if(isCrouching) {
+                speed = crouchSpeed;
+                col.size = new Vector2(0.5f, 0.7f);
+                col.offset = new Vector3(0f, -0.6f);
             } else {
-                horizontalDrag = NORMAL_H_DRAG;
-                velocityStep = 0f;
+                speed = normalSpeed;
+                col.size = new Vector2(0.5f, 1.7f);
+                col.offset = new Vector3(0f, -0.1f);
+            }
+        }
+
+
+    }
+
+    private void ExecuteNormalFixed()
+    {
+        if(masterControl)
+        {
+            if (isJumping && Input.GetKey(KeyCode.Space))
+            {
+                Jump();
+            }
+            if (startDash)
+            {
+                Dash();
+                startDash = false;
+            }
+            if (isDashing)
+            {
+                rb.AddForce(dashVector * Time.fixedDeltaTime, ForceMode2D.Force);
             }
 
-            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D)) {
-                MoveHorizontal();
+            Vector3 velocity = transform.InverseTransformDirection(rb.velocity);
+            float force_x = -drag * velocity.x;
+            float force_y = -drag * 0.5f * velocity.y;
+            if (!isDashing)
+            {
+                if (rb.velocity.y < 0)
+                {
+                    Debug.Log("mod: " + parachuteModifier);
+                    rb.AddRelativeForce(new Vector2(force_x, force_y * parachuteModifier));
+                }
+                else
+                {
+                    rb.AddRelativeForce(new Vector2(force_x, 0));
+                }
             }
 
-            // Gravity
-            if (rb.velocity.y > -MAX_VERTICAL_SPEED) {
-                rb.AddForce(new Vector2(0, -gravity) * Time.deltaTime, ForceMode2D.Force);
+
+            if (!isDashing)
+            {
+                input = new Vector2(Input.GetAxisRaw("Horizontal"), 0);
+                if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
+                {
+                    rb.AddRelativeForce(Vector2.right * input.x * Time.deltaTime * speed);
+                }
             }
 
-            coinTimer += 0.02f;
+            dashRechargeTimer -= Time.fixedDeltaTime;
         }
     }
+
+    private void Dash()
+    {
+        dashVector = GetDashInput();
+        rb.velocity = dashVector / 40f;
+        isDashing = true;
+        isJumping = false;
+        canDash = false;
+        rb.gravityScale = 0f;
+        dashRechargeTimer = dashRechargeTime;
+        StartCoroutine(DashTimer());
+    }
+
+    private Vector2 GetDashInput()
+    {
+        var direction = new Vector2(0, 0);
+        if (Input.GetKey(KeyCode.W))
+        {
+            direction += Vector2.up;
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            direction += Vector2.right;
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            direction += Vector2.down;
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            direction += Vector2.left;
+        }
+
+        direction.Normalize();
+
+        if(Mathf.Abs(direction.y) > 0) {
+            isCrouching = false;
+        }
+
+        return direction * dashForce;
+    }
+
+    private IEnumerator DashTimer()
+    {
+        yield return new WaitForSeconds(dashLength);
+        isDashing = false;
+        rb.gravityScale = 15f;
+        rb.velocity = dashVector / 25;
+    }
+
+
+    private void InitialJump()
+    {
+        jumpTimeCounter = maxJumpTime;
+        //yPrevious = transform.position.y;
+        //yDifference = 0f;
+        isJumping = true;
+        isCrouching = false;
+
+        rb.AddForce(new Vector2(0, jumpForce / 200f), ForceMode2D.Impulse);
+
+        EventManager.TriggerEvent("jump");
+
+        SoundManager.PlaySound(SoundManager.Sound.Jump);
+    }
+
+    private void Jump()
+    {
+        if (jumpTimeCounter > 0)
+        {
+            rb.AddForce(new Vector2(0, jumpForce * Time.fixedDeltaTime), ForceMode2D.Force);
+            //yDifference += transform.position.y - yPrevious;
+            //yPrevious = transform.position.y;
+        }
+        else
+        {
+            isJumping = false;
+        }
+        jumpTimeCounter -= Time.deltaTime;
+    }
+
+    private void MoveHorizontal(float percentToMove)
+    {
+        rb.AddForce(Vector2.right * input.x * Time.deltaTime * speed * percentToMove);
+    }
+
+
 
     public bool isGrounded() {
-        Vector3 margin = new Vector3(0.4f, 0f, 0f);
-        RaycastHit2D hit1 = Physics2D.Raycast(col.bounds.center - margin, Vector2.down, distanceGround + 0.05f, platformLayerMask);;
+        Vector3 margin = new Vector3(0.2f, 0f, 0f);
+
+        RaycastHit2D hit1 = Physics2D.Raycast(col.bounds.center - margin, Vector2.down, distanceGround + 0.05f, platformLayerMask);
         //Debug.DrawRay(col.bounds.center - margin, Vector2.down * (distanceGround + 0.05f));
 
-        RaycastHit2D hit2 = Physics2D.Raycast(col.bounds.center + margin, Vector2.down, distanceGround + 0.05f, platformLayerMask); ;
+        RaycastHit2D hit2 = Physics2D.Raycast(col.bounds.center + margin, Vector2.down, distanceGround + 0.05f, platformLayerMask);
         //Debug.DrawRay(col.bounds.center + margin, Vector2.down * (distanceGround + 0.05f));
+
         if (hit1.collider || hit2.collider) {
+            canJump = true;
+            coyoteTimeCoroutineHasNotTriggeredYet = true;
             return true;
+        } else if (coyoteTimeCoroutineHasNotTriggeredYet) {
+            StartCoroutine(CoyoteTime());
+            coyoteTimeCoroutineHasNotTriggeredYet = false;
         }
         return false;
     }
 
-    public void MoveHorizontal() {
-        
-        if (Mathf.Abs(rb.velocity.x) > MAX_HORIZONTAL_SPEED) {
-            input.x = 0;
-        }
-
-        // turn around fast
-        if (Input.GetKey(KeyCode.A) && rb.velocity.x > 0) {
-            rb.velocity = new Vector2(rb.velocity.x * 0.9f, rb.velocity.y);
-        } else if (Input.GetKey(KeyCode.D) && rb.velocity.x < 0) {
-            rb.velocity = new Vector2(rb.velocity.x * 0.9f, rb.velocity.y);
-        }
-
-        rb.AddForce(Vector2.right * input.x * Time.deltaTime * speed);
+    private IEnumerator CoyoteTime()
+    {
+        yield return new WaitForSeconds(coyoteTime);
+        canJump = false;
     }
 
     public bool GetMasterControl() {
@@ -229,7 +373,7 @@ public class PlayerMovement : MonoBehaviour
         {
             if(firstPlatformTouch) // for first cutscene
             {
-                mainCam.GetComponent<Follow>().smoothSpeed = 0.125f;
+                mainCam.GetComponent<Follow>().smoothSpeed = 0.25f;
                 firstPlatformTouch = false;
             }
 

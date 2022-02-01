@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Spring : MonoBehaviour
 {
-    private float force;
+    private float force = 60f;
     public Direction direction;
 
     private bool readyForPlayer = true;
@@ -27,8 +27,6 @@ public class Spring : MonoBehaviour
 
         if (direction == Direction.Up)
         {
-            force = 40f;
-
             box.offset = new Vector2(0f, -0.375f);
             box.size = new Vector2(1f, 0.25f);
 
@@ -36,8 +34,6 @@ public class Spring : MonoBehaviour
         }
         else if (direction == Direction.Right)
         {
-            force = 50f;
-
             box.offset = new Vector2(-0.375f, 0f);
             box.size = new Vector2(0.25f, 1f);
 
@@ -45,8 +41,6 @@ public class Spring : MonoBehaviour
         }
         else if (direction == Direction.Down)
         {
-            force = 30f;
-
             box.offset = new Vector2(0f, 0.375f);
             box.size = new Vector2(1f, 0.25f);
 
@@ -54,8 +48,6 @@ public class Spring : MonoBehaviour
         }
         else if (direction == Direction.Left)
         {
-            force = 50f;
-
             box.offset = new Vector2(0.375f, 0f);
             box.size = new Vector2(0.25f, 1f);
 
@@ -94,7 +86,7 @@ public class Spring : MonoBehaviour
 
             if(direction == Direction.Up)
             {
-                rb.velocity = new Vector2(rb.velocity.x, force);
+                rb.velocity = new Vector2(rb.velocity.x, force * 0.8f);
             }
             else if(direction == Direction.Right)
             {
@@ -102,7 +94,7 @@ public class Spring : MonoBehaviour
             }
             else if (direction == Direction.Down)
             {
-                rb.velocity = new Vector2(rb.velocity.x, -force);
+                rb.velocity = new Vector2(rb.velocity.x, -force * 0.6f);
             }
             else if (direction == Direction.Left)
             {
