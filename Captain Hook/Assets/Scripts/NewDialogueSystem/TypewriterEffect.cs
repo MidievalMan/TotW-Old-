@@ -63,9 +63,7 @@ public class TypewriterEffect : MonoBehaviour
                 //
                 if (charactersLeft > 2 && IsTag(textToType[i]) && IsTag(textToType[i + 1]))
                 {
-                    /* var of type TextEffects = */
-                    Debug.Log("RAN");
-                    textEffects.effectType = WhichTag(textToType, i);
+                    textEffects.ChooseTextEffect(WhichTag(textToType, i), textLabel, textToType, i + 3);
                 }
                 //
 
@@ -97,7 +95,6 @@ public class TypewriterEffect : MonoBehaviour
 
     private EffectType WhichTag(string textToType, int currentIndex)
     {
-        Debug.Log(textToType[currentIndex + 2]);
         switch(textToType[currentIndex + 2])
         {
             case ('W'):

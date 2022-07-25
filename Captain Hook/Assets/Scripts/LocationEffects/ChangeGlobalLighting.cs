@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.Universal;
+
 
 public class ChangeGlobalLighting : MonoBehaviour
 {
-    public Light2D globalLight;
+    public UnityEngine.Rendering.Universal.Light2D globalLight;
 
     private float originalIntensity;
     public float goalIntensity;

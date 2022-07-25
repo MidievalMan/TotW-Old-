@@ -13,7 +13,7 @@ public class Fans : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.S))
         {
             areaEffect.forceMagnitude = 0f;
         } else if(Input.GetKeyUp(KeyCode.S))

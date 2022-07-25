@@ -1,11 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.Rendering.Universal;
+
 
 public class FadeInOnCreation : MonoBehaviour
 {
-    private Light2D light;
+    private UnityEngine.Rendering.Universal.Light2D light;
     private SpriteRenderer sprite;
     private float step = 0.25f;
     private float alpha = 0f;
@@ -13,7 +13,7 @@ public class FadeInOnCreation : MonoBehaviour
 
     void Start()
     {
-        light = GetComponent<Light2D>();
+        light = GetComponent<UnityEngine.Rendering.Universal.Light2D>();
         sprite = GetComponent<SpriteRenderer>();
     }
 
