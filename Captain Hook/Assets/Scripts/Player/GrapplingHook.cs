@@ -57,7 +57,7 @@ public class GrapplingHook : MonoBehaviour {
                 aimLine.gameObject.SetActive(true);
             }
             
-            if (Input.GetMouseButtonDown(1) && PlayerStats.pushHookUnlocked) {
+            if (Input.GetKeyDown(KeyCode.P) && PlayerStats.pushHookUnlocked) {
                 usePullHook = !usePullHook;
                 if (aimLine.colorGradient.Evaluate(0f) == gradientForAimLine1.Evaluate(0f)) {
                     aimLine.colorGradient = gradientForAimLine2;
@@ -72,7 +72,7 @@ public class GrapplingHook : MonoBehaviour {
             AimGrapplingHook();
 
             if (PlayerStats.pullHookUnlocked &&
-                Input.GetMouseButtonDown(0) &&
+                Input.GetKeyDown(KeyCode.O) &&
                 hit &&
                 Vector3.Distance(hit.point, player.position) < maxReach &&
                 canGrapple &&
